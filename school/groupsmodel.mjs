@@ -1,70 +1,68 @@
 import {Validator} from "./validator"
 
 export class GroupsModel{
-    constructor(pupil){
-        this.data = new Map()
-        this.pupil = pupil;
-        this.schema = {
-            "id": "string",
-            "room": "number"
-        }
-    }
-    async add(room){
-        if(typeof room != "number"){
-            throw new Error('Must be a number!');
-        }else{
-            const id = Symbol();
-            this.data.set(id, {room, pupils: new Set() });
-            return id;
-        }
+
+    constructor(){
+        this._map = new Map();
+        this._tmp = [];
     }
 
-    async addPupil(id, pupil){
-        if(this.data.has(id)) {
-            this.data.get(id).pupils.add(pupil);
+    async add(rom){
+        let obj = {};
+        obj.room = rom;
+        obj.id = Math.floor(Math.random() * 100000000);
+        this._map.set(obj.id, obj);
+        return obj.id;
+    }
+
+    async read(id){
+        if(!this._map.get(id)){
+            throw new Error('There is no user with this id !');
+        }else{
+            return this._map.get(id);
         }
-        else throw new Error('We dont have such ID!');
     }
 
     async remove(id){
-        if(!this.data.has(id)){
-            throw new Error("We dont have user with ID like this!");
+        if(!this._map.get(id)){
+            throw new Error('There is no user with this id !');
         }else{
-            this.data.delete(id);
-        }
-    }
-    
-    async removePupil(id, pupil){
-        if(this.data.has(id)) {
-            this.data.get(id).pupils.delete(pupil);
-        }
-        else throw new Error('We dont have such ID!');
-        }
-
-    async read(id){
-        if(!this.data.has(id)){
-            throw new Error('We dont have user with ID like this!');
-        }else{
-            return { id, ...this.data.get(id) };
+            this._map.delete(id);
         }
     }
 
-    async update(id, profile){
-        if(!this.data.has(id)){
-            throw new Error('we dont have user with ID like this!');
-        }else if(!Validator.validator(profile,this.schema)){
-            throw new Error("Validation of New Profile gone Wrong!")
+    async update(id, obj){
+        let oldid = this._map.get(id).id;
+        if(!this._map.get(id)){
+            throw new Error('There is no user with this id !');
         }else{
-            this.data.set(id, profile);
-        }
+            obj.id = oldid;
+            this._map.set(id, obj);
+        } 
     }
 
     async readAll(){
-        const Arrayz = [];
-        this.data.forEach(value => {
-            Arrayz.push(value);
-        })
-        console.log()
-        return Arrayz;
+        let mas = [];
+        this._map.forEach((key) => {
+            mas.push(this._map.get(key));
+        });
+        return mas;
+    }
+
+    async addPupil(groupId, pupil){
+        if(this._map.get(groupId)){
+            this._tmp.push({group:this._map.get(groupId), pupilId:pupil.id, "pupil": pupil.id});
+        }
+        else{
+            throw new Error('There is no such id !');
+        }
+    }
+
+    async removePupil(groupId, pupil){
+        for(let i=0; i<this._tmp.length; i++){
+            if(this._tmp[i].group.id == groupId && this._tmp[i].pupilId == pupil.pid){
+                this._tmp.slice(i,i);
+            }
+        }
     }
 }

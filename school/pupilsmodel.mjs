@@ -49,18 +49,17 @@ export class PupilsModel{
     }
     async read(obj){
         return this.data.get(obj)
-        console.log(obj)
     }
     async update(id, obj){
 
         if(!obj || typeof obj != "object"){
             throw new Error("Must be an object")}
 
-        const user = this.data.get(id)        
+        const user = this.data.get(id.id)        
         if(user){
             if (Validator.validator(obj,this.sch)){
                 this.data.set(id,{...user,...obj} )
-                return this.data.get(id)
+                return this.data.get(id.id)
             }
             
         } else {

@@ -15,13 +15,9 @@ import {SubjectsModel,LMSModel,TeachersModel,PupilsModel,GroupsModel,GradebooksM
 
   history.id
 
-  
   const lms = new LMSModel();
   await lms.add(history);
-  await lms.add(m);
-  await lms.remove(m);
-  await lms.verify(history)
-  await lms.readAll()
+
   
   let data = {
     name: {
@@ -49,81 +45,112 @@ import {SubjectsModel,LMSModel,TeachersModel,PupilsModel,GroupsModel,GradebooksM
       }
     ],
     description: "me",
-  }
-
-  let updatedProfile = {
-    name: {
-      first: "nika",
-      last: "vaaxo"
-    },
-    image: "sdasdsf",
-    dateOfBirth: "ten sepstember nnn", // format date
-    emails: [
-      {
-        email: "daneliatesdasdmur@gmail.com",
-        primary: true
-      }
-    ],
-    phones: [
-      {
-        phone: "99553423457345566",
-        primary: true
-      }
-    ],
-    sex: "string", // male or female
-    subjects: [
-      {
-        subject: "string"
-      }
-    ],
-    description: "string",
-  }
-
+  };
+  
   const teachers = new TeachersModel();
+  let teacherId = "";
+
+  
+  teacherId = await teachers.add(data);
+  // will return Teachers data including teacher's id
+  const readteacher = await teachers.read(teacherId);
+
+  // will update Teacher. This method should use the same validation as a constructor method
+  const teacherId1 = teachers.update(teacherId, data)
+
+
+  // will remove Teacher
+  //await teachers.remove(teacherId)
   
 
-  const teacherId = await teachers.add(data);
-
-  await teachers.read(teacherId)
-
-  const teacherId2 =await teachers.update(teacherId, updatedProfile)
-
-  await teachers.remove(teacherId2)
-
-  const pupil = new PupilsModel();
+  let david = {
+    "name": {
+      "first": "David",
+      "last": "danelia"
+    },
+    "image": "david",
+    "dateOfBirth": "nineteen of september nnn", // format date
+    "phones": [
+      {
+        "phone": "557345566",
+        "primary": true
+      }
+    ],
+    "sex": "male", // male OR female
+    "description": "about me"
+  };
   
-  const pupilId =await pupil.add(data);
+  // Create new Pupil from Pupil's data
+  const pupils = new PupilsModel();
+  let pupilId = "";
 
+    // Create a new pupil
+  pupilId = await pupils.add(david);
+    // will return Pupils data including pupil's id
+  const lister = await pupils.read(pupilId)
+  
+    // will update Pupil. This method should use the same validation as a constructor method
+  await pupils.update(pupilId, david)
+  
+    // will remove pupil
+    //await pupils.remove(pupilId)
+  
+    
   const room = 236;
   const groups = new GroupsModel();
+  let groupId = "";
 
-  const groupId =await groups.add(room);
+  // Create a new group
+  groupId = await groups.add(room);
+  
+  // Add this pupil to this group
+  await groups.addPupil(groupId, pupils);
 
+  // Remove this pupil from this group
+  //await groups.removePupil(groupId, pupils);
+
+  // Update room for this group
   await groups.update(groupId, {
-  id: 'JEF5H43H',
-  room: 237
+    room: 237
   });
 
-  await groups.read(groupId)
-  await groups.readAll()
+  // Read information about group
+  await groups.read(groupId);
 
+  // It will return array of groups
+  await groups.readAll();
+
+  
+  const gradebooks = new GradebooksModel(groups, teachers, lms);
+  const pupilId1 = pupilId;
+  const teacherId2 = teacherId.id;
   const level = 1;
-  const grade = await new GradebooksModel(groups, teacherId, lms);
-  const gradebook = await grade.add(level, groupId);
+
+
+  // Create a new gradebook
+  const gradebookId = await gradebooks.add(level, groupId);
+
+  // Destroy all data inside this gradebook
+  //gradebooks.clear();
 
   const record = {
-    "pupilId": pupilId,
-    "teacherId": teacherId,
+    "pupilId": pupilId1,
+    "teacherId": teacherId2,
     "subjectId": history.id,
     "lesson": 1,
     "mark": 9
   };
-  await grade.addRecord(gradebook, record);
 
-  const oliver = await grade.read(gradebook, pupilId);
-  const everyone = await grade.readAll(gradebook);
-  console.log(everyone)
+  gradebooks.addRecord(gradebookId, record);
+
+  // Read information about oliver results
+  const oliver = await gradebooks.read(gradebookId, pupilId);
+  
+  // Read information about all students in this gradebook
+  const students = await gradebooks.readAll(gradebookId);
+  console.log(students)
 })()
+
 
 
 

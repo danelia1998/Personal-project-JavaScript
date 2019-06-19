@@ -1,51 +1,79 @@
 export class GradebooksModel{
+
     constructor(groups, teachers, lms){
+        this.gradebook = new Map();
+        this.mBook = [];
         this.groups = groups;
         this.teachers = teachers;
         this.lms = lms;
-        this.gradeBook = new Map()
+        this.id = "";
     }
 
-    async add(level, groupID) {
-        const id = Symbol();
-        this.gradeBook.set( id, { level, groupID, records: [] });
-        return id;
+    checkIdtype(id){
+        if(typeof id !== "number"){
+            throw new Error('invalid type');
+        }
     }
 
-    async clear() {
-        return this.gradeBook.clear();
+    async add(level, idgr){
+        let newobj = {};
+        this.id = Math.floor(Math.random() * 100000000)
+        newobj.id = this.id;
+        newobj.level = level;
+        newobj.groupid = idgr;
+        this.checkIdtype(idgr);
+        this.gradebook.set(this.id, newobj);
+        return this.id;
     }
 
-    async addRecord(id, record) {
-        this.gradeBook.get(id).records.push( record );
+    async clear(){
+        this.groups = null;
+        this.teachers = null;
+        this.lms = null;
     }
 
-    async read(id, pupil) {
-        const records = this.gradeBook.get(id).records.filter(record => record.pupilId === pupil);
-        const { name: { first, last } } = await this.groups.pupil.read(records[0].pupilId);
-        const result = { name: `${first} ${last}`, records: [] };
-
-        for (const { teacherId, subjectId, lesson, mark } of records) {
-            const { name: { first, last } } = await this.teachers.read(teacherId);
-            const { title: subject } = await this.LMS.read(subjectId.id);
-            result.records.push({ teacher: `${first} ${last}`, subject, lesson, mark });
-        }return result;
-    }
-    
-    async readAll(id){
-        const records = this.gradeBook.get(id).records;
-        const result = new Map();
-
-        for (const { pupilId, teacherId, subjectId, lesson, mark } of records) {
-            
-            if (!result.has(pupilId)) {
-                const { name: { first, last } } = await this.groups.pupil.read(records[0].pupilId);
-                result.set(pupilId, { name: `${first} ${last}`, records: [] });
+    async addRecord(gradebookId, record){
+        let pupilName = "";
+        for(let i=0; i<this.groups._tmp.length; i++){
+            if( this.groups._tmp[i].pupil.id == record.pupilId){
+                pupilName = this.groups._tmp[i].pupil.name.first;
             }
+        }
+        // console.log(this.teachers.data.get(record.teacherId).name.first)
+        let newobj = {
+            name: pupilName,
+            records: [
+              {
 
-            const { name: { first, last } } = await this.teachers.read(teacherId);
-            const { title: subject } = await this.LMS.read(subjectId.id);
-            result.get(pupilId).records.push({ teacher: `${first} ${last}`, subject, lesson, mark });        
-        }return Array.from(result.values());
+                teacher: this.teachers.data.get(record.teacherId).name.first,
+                subject: this.lms.data.get(record.subjectId).title,
+                lesson: record.lesson,
+                mark: record.mark
+              }
+            ]
+        };
+        
+        let finalobj = {gradebookid: gradebookId, record:  newobj, idpupil: record.pupilId};
+        this.mBook.push(finalobj);
+    }
+
+    async read(first, second){
+        for(let i=0; i<this.mBook.length; i++){
+            if(this.mBook[i].gradebookid==first && this.mBook[i].idpupil==second)
+            {
+                return this.mBook[i].record;
+            }
+        }
+    }
+
+    async readAll(mainid){
+        let result = [];
+        for(let i=0; i<this.mBook.length; i++){
+            if(this.mBook[i].gradebookid==mainid)
+            {
+                result.push(this.mBook[i].record);
+            }
+        }
+        return result;
     }
 }
