@@ -1,7 +1,4 @@
 export class Validator{
-    constructor(){
-
-    }
 
     static validator(data,schema){
         let valid = true

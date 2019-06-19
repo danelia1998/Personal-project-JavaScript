@@ -25,6 +25,7 @@ export class LMSModel {
         if(arguments.length > 0){
             throw new Error("readAll method can't take arguments!")
         }else{
+            console.log(Array.from(this.data.values()))
             return Array.from(this.data.values())
         }
     }
